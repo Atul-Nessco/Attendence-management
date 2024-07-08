@@ -1,10 +1,7 @@
 const express = require('express');
-const { someLogControllerMethod } = require('../controllers/logController');
-
 const router = express.Router();
+const { getLogsByEmployeeIdAndDate } = require('../controllers/logController');
 
-console.log(someLogControllerMethod); // Should not be undefined
-
-router.post('/log', someLogControllerMethod);
+router.get('/:employeeId/:date', getLogsByEmployeeIdAndDate);
 
 module.exports = router;
