@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { getLogsByEmployeeIdAndDate } = require('../controllers/logController');
+const { getLogs } = require('../controllers/logController');
 
-router.get('/:employeeId/:date', getLogsByEmployeeIdAndDate);
+router.get('/:employeeId/:action', getLogs);
 
 module.exports = router;

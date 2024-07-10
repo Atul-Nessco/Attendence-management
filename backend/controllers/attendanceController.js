@@ -13,8 +13,66 @@ const getISTTime = () => {
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
   const istTime = new Date(now.getTime() + istOffset);
-  const formattedTime = istTime.toISOString().slice(0, 19).replace('T', ' ');
-  return formattedTime;
+  return istTime;
+};
+
+const formatISTTime = (date) => {
+  if (!(date instanceof Date) || isNaN(date)) {
+    throw new RangeError('Invalid time value');
+  }
+  // const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+  const istTime = new Date(date.getTime());
+  return istTime.toISOString().slice(0, 19).replace('T', ' ');
+};
+
+const updateGoogleSheet = async (employeeId, employeeName, attendance, mapsLink, photo, status) => {
+  const start = new Date(attendance.inTime);
+  start.setHours(0, 0, 0, 0);
+
+  const inTimeFormatted = formatISTTime(new Date(attendance.inTime));
+  const outTimeFormatted = attendance.outTime ? formatISTTime(new Date(attendance.outTime)) : null;
+
+  const sheetData = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    range: 'Sheet2!A:L',
+  });
+  const rows = sheetData.data.values;
+  const rowIndex = rows.findIndex(row => row[0] === employeeId && row[2] && new Date(row[2]).toDateString() === start.toDateString());
+
+  const updatedRow = [
+    employeeId,
+    employeeName,
+    inTimeFormatted,
+    attendance.geoLocationIn,
+    attendance.photoUrlIn,
+    'IN',
+    status || 'normal',
+    outTimeFormatted,
+    attendance.geoLocationOut,
+    attendance.photoUrlOut,
+    'OUT',
+    status || 'normal'
+  ];
+
+  if (rowIndex !== -1) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: `Sheet2!A${rowIndex + 1}:L${rowIndex + 1}`, // Update the range as necessary
+      valueInputOption: 'USER_ENTERED',
+      resource: {
+        values: [updatedRow],
+      },
+    });
+  } else {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: 'Sheet2!A:L', // Adjust range as necessary
+      valueInputOption: 'USER_ENTERED',
+      resource: {
+        values: [updatedRow],
+      },
+    });
+  }
 };
 
 const createAttendance = async (req, res) => {
@@ -24,124 +82,45 @@ const createAttendance = async (req, res) => {
     const mapsLink = createMapsLink(geoLocation.latitude, geoLocation.longitude);
     const currentTimeIST = getISTTime();
 
-    // Check if attendance record exists for the same day
-    const start = new Date();
+    // Start and end of the current day in IST
+    const start = new Date(currentTimeIST);
     start.setHours(0, 0, 0, 0);
-    const end = new Date();
+    const end = new Date(currentTimeIST);
     end.setHours(23, 59, 59, 999);
 
-    let attendance = await Attendance.findOne({ 
-      employeeId, 
+    let attendance = await Attendance.findOne({
+      employeeId,
       inTime: { $gte: start, $lte: end }
     });
 
-    if (!attendance && type === 'IN') {
+    if (!attendance) {
       attendance = new Attendance({
         employeeId,
         employeeName,
-        inTime: currentTimeIST,
-        geoLocationIn: mapsLink,
-        photoUrlIn: photo,
+        inTime: type === 'IN' ? currentTimeIST : null,
+        outTime: type === 'OUT' ? currentTimeIST : null,
+        geoLocationIn: type === 'IN' ? mapsLink : null,
+        geoLocationOut: type === 'OUT' ? mapsLink : null,
+        photoUrlIn: type === 'IN' ? photo : null,
+        photoUrlOut: type === 'OUT' ? photo : null,
         status: status || 'normal',
       });
-      await attendance.save();
-      await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, currentTimeIST, null);
-
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: 'Sheet2!A:G', // Adjust range as necessary
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-          values: [[employeeId, employeeName, currentTimeIST, mapsLink, photo, 'IN', status || 'normal']],
-        },
-      });
-
-    } else if (attendance && type === 'OUT') {
-      attendance.outTime = currentTimeIST;
-      attendance.geoLocationOut = mapsLink;
-      attendance.photoUrlOut = photo;
-      attendance.status = status || 'normal';
-      await attendance.save();
-      await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, attendance.inTime, currentTimeIST);
-
-      const sheetData = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: 'Sheet2!A:G',
-      });
-      const rows = sheetData.data.values;
-      const rowIndex = rows.findIndex(row => row[0] === employeeId && row[5] === 'IN');
-      if (rowIndex !== -1) {
-        const updatedRow = [
-          employeeId,
-          employeeName,
-          attendance.inTime,
-          attendance.geoLocationIn,
-          attendance.photoUrlIn,
-          'IN',
-          status || 'normal',
-          currentTimeIST,
-          mapsLink,
-          photo,
-          'OUT',
-          status || 'normal'
-        ];
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: process.env.SPREADSHEET_ID,
-          range: `Sheet2!A${rowIndex + 2}:L${rowIndex + 2}`, // Update the range as necessary
-          valueInputOption: 'USER_ENTERED',
-          resource: {
-            values: [updatedRow],
-          },
-        });
-      } else {
-        throw new Error('Attendance record for IN not found.');
-      }
-
     } else {
-      // Update existing IN record
-      attendance.inTime = type === 'IN' ? currentTimeIST : attendance.inTime;
-      attendance.geoLocationIn = type === 'IN' ? mapsLink : attendance.geoLocationIn;
-      attendance.photoUrlIn = type === 'IN' ? photo : attendance.photoUrlIn;
-      attendance.outTime = type === 'OUT' ? currentTimeIST : attendance.outTime;
-      attendance.geoLocationOut = type === 'OUT' ? mapsLink : attendance.geoLocationOut;
-      attendance.photoUrlOut = type === 'OUT' ? photo : attendance.photoUrlOut;
-      attendance.status = status || 'normal';
-      await attendance.save();
-
-      await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, attendance.inTime, attendance.outTime);
-
-      // Update Google Sheet
-      const sheetData = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: 'Sheet2!A:G',
-      });
-      const rows = sheetData.data.values;
-      const rowIndex = rows.findIndex(row => row[0] === employeeId && row[5] === 'IN');
-      if (rowIndex !== -1) {
-        const updatedRow = [
-          employeeId,
-          employeeName,
-          attendance.inTime,
-          attendance.geoLocationIn,
-          attendance.photoUrlIn,
-          'IN',
-          status || 'normal',
-          attendance.outTime,
-          attendance.geoLocationOut,
-          attendance.photoUrlOut,
-          'OUT',
-          status || 'normal'
-        ];
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: process.env.SPREADSHEET_ID,
-          range: `Sheet2!A${rowIndex + 2}:L${rowIndex + 2}`, // Update the range as necessary
-          valueInputOption: 'USER_ENTERED',
-          resource: {
-            values: [updatedRow],
-          },
-        });
+      if (type === 'IN') {
+        attendance.inTime = currentTimeIST;
+        attendance.geoLocationIn = mapsLink;
+        attendance.photoUrlIn = photo;
+      } else if (type === 'OUT') {
+        attendance.outTime = currentTimeIST;
+        attendance.geoLocationOut = mapsLink;
+        attendance.photoUrlOut = photo;
       }
+      attendance.status = status || 'normal';
     }
+    await attendance.save();
+    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, formatISTTime(currentTimeIST), null);
+
+    await updateGoogleSheet(employeeId, employeeName, attendance, mapsLink, photo, status);
 
     res.status(200).json({ success: true, attendance });
   } catch (error) {
@@ -202,8 +181,8 @@ const updateAttendanceFromLog = async (req, res) => {
       return res.status(404).json({ message: 'Log not found' });
     }
 
-    let attendance = await Attendance.findOne({ 
-      employeeId, 
+    let attendance = await Attendance.findOne({
+      employeeId,
       inTime: { $gte: new Date(log.timestamp).setHours(0, 0, 0, 0), $lte: new Date(log.timestamp).setHours(23, 59, 59, 999) }
     });
 
@@ -223,36 +202,7 @@ const updateAttendanceFromLog = async (req, res) => {
     attendance.status = 'Append';
     await attendance.save();
 
-    const sheetData = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.SPREADSHEET_ID,
-      range: 'Sheet2!A:L',
-    });
-    const rows = sheetData.data.values;
-    const rowIndex = rows.findIndex(row => row[0] === employeeId && row[5] === 'IN');
-    if (rowIndex !== -1) {
-      const updatedRow = [
-        employeeId,
-        attendance.employeeName,
-        attendance.inTime,
-        attendance.geoLocationIn,
-        attendance.photoUrlIn,
-        'IN',
-        attendance.status,
-        attendance.outTime,
-        attendance.geoLocationOut,
-        attendance.photoUrlOut,
-        'OUT',
-        attendance.status
-      ];
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        range: `Sheet2!A${rowIndex + 2}:L${rowIndex + 2}`,
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-          values: [updatedRow],
-        },
-      });
-    }
+    await updateGoogleSheet(employeeId, attendance.employeeName, attendance, log.geoLocation, log.photoUrl, attendance.status);
 
     res.status(200).json({ success: true, attendance });
   } catch (error) {
