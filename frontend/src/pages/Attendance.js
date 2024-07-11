@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Button, TextField, Typography, Grid, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Typography, Grid, IconButton, Menu, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AuthContext from '../context/AuthContext';
@@ -82,15 +82,7 @@ const Attendance = () => {
       <Grid container spacing={2} justifyContent="center">
         <Grid item xs={12} md={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <TextField
-              label="Employee ID"
-              value={auth.employeeId}
-              InputProps={{
-                readOnly: true,
-              }}
-              fullWidth
-              margin="normal"
-            />
+            <Typography variant="h6">Welcome, {auth.name}</Typography>
             <IconButton onClick={handleMenuClick}>
               <MoreVertIcon />
             </IconButton>
@@ -98,15 +90,6 @@ const Attendance = () => {
               <MenuItem onClick={() => setModalOpen(true)}>View Logs</MenuItem>
             </Menu>
           </Box>
-          <TextField
-            label="Employee Name"
-            value={auth.name}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-            margin="normal"
-          />
           <GeolocationDisplay geoLocation={geoLocation} geoError={geoError} />
           <CapturePhoto image={image} setImage={setImage} />
           <ActionButtons
@@ -116,6 +99,7 @@ const Attendance = () => {
             setLoading={setLoading}
             setAttendanceData={setAttendanceData}
             auth={auth}
+            setImage={setImage} // Pass setImage to ActionButtons
           />
         </Grid>
       </Grid>

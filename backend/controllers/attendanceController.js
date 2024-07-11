@@ -9,28 +9,31 @@ const createMapsLink = (latitude, longitude) => {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 };
 
-const getISTTime = () => {
-  const now = new Date();
-  const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-  const istTime = new Date(now.getTime() + istOffset);
-  return istTime;
-};
-
-const formatISTTime = (date) => {
-  if (!(date instanceof Date) || isNaN(date)) {
-    throw new RangeError('Invalid time value');
-  }
+const getISTTime = (date = new Date()) => {
   // const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-  const istTime = new Date(date.getTime());
-  return istTime.toISOString().slice(0, 19).replace('T', ' ');
+  return new Date(date.getTime());
 };
 
-const updateGoogleSheet = async (employeeId, employeeName, attendance, mapsLink, photo, status) => {
+const formatDateForMongo = (date) => {
+  return date.toISOString();
+};
+
+const formatDateForSheet = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+};
+
+const updateGoogleSheet = async (employeeId, employeeName, attendance, status) => {
   const start = new Date(attendance.inTime);
   start.setHours(0, 0, 0, 0);
 
-  const inTimeFormatted = formatISTTime(new Date(attendance.inTime));
-  const outTimeFormatted = attendance.outTime ? formatISTTime(new Date(attendance.outTime)) : null;
+  const inTimeFormatted = attendance.inTime ? formatDateForSheet(getISTTime(new Date(attendance.inTime))) : '';
+  const outTimeFormatted = attendance.outTime ? formatDateForSheet(getISTTime(new Date(attendance.outTime))) : '';
 
   const sheetData = await sheets.spreadsheets.values.get({
     spreadsheetId: process.env.SPREADSHEET_ID,
@@ -50,8 +53,7 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, mapsLink,
     outTimeFormatted,
     attendance.geoLocationOut,
     attendance.photoUrlOut,
-    'OUT',
-    status || 'normal'
+    'OUT'
   ];
 
   if (rowIndex !== -1) {
@@ -97,8 +99,8 @@ const createAttendance = async (req, res) => {
       attendance = new Attendance({
         employeeId,
         employeeName,
-        inTime: type === 'IN' ? currentTimeIST : null,
-        outTime: type === 'OUT' ? currentTimeIST : null,
+        inTime: type === 'IN' ? formatDateForMongo(currentTimeIST) : null,
+        outTime: type === 'OUT' ? formatDateForMongo(currentTimeIST) : null,
         geoLocationIn: type === 'IN' ? mapsLink : null,
         geoLocationOut: type === 'OUT' ? mapsLink : null,
         photoUrlIn: type === 'IN' ? photo : null,
@@ -107,20 +109,20 @@ const createAttendance = async (req, res) => {
       });
     } else {
       if (type === 'IN') {
-        attendance.inTime = currentTimeIST;
+        attendance.inTime = formatDateForMongo(currentTimeIST);
         attendance.geoLocationIn = mapsLink;
         attendance.photoUrlIn = photo;
       } else if (type === 'OUT') {
-        attendance.outTime = currentTimeIST;
+        attendance.outTime = formatDateForMongo(currentTimeIST);
         attendance.geoLocationOut = mapsLink;
         attendance.photoUrlOut = photo;
       }
       attendance.status = status || 'normal';
     }
     await attendance.save();
-    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, formatISTTime(currentTimeIST), null);
+    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, formatDateForMongo(currentTimeIST), null);
 
-    await updateGoogleSheet(employeeId, employeeName, attendance, mapsLink, photo, status);
+    await updateGoogleSheet(employeeId, employeeName, attendance, status);
 
     res.status(200).json({ success: true, attendance });
   } catch (error) {
@@ -191,18 +193,18 @@ const updateAttendanceFromLog = async (req, res) => {
     }
 
     if (action === 'CheckIn') {
-      attendance.inTime = log.inTime;
+      attendance.inTime = formatDateForMongo(new Date(log.timestamp));
       attendance.geoLocationIn = log.geoLocation;
       attendance.photoUrlIn = log.photoUrl;
     } else if (action === 'CheckOut') {
-      attendance.outTime = log.timestamp;
+      attendance.outTime = formatDateForMongo(new Date(log.timestamp));
       attendance.geoLocationOut = log.geoLocation;
       attendance.photoUrlOut = log.photoUrl;
     }
     attendance.status = 'Append';
     await attendance.save();
 
-    await updateGoogleSheet(employeeId, attendance.employeeName, attendance, log.geoLocation, log.photoUrl, attendance.status);
+    await updateGoogleSheet(employeeId, attendance.employeeName, attendance, attendance.status);
 
     res.status(200).json({ success: true, attendance });
   } catch (error) {

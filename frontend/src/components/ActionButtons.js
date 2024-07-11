@@ -1,9 +1,7 @@
 import React from 'react';
-import { Box, Button, CircularProgress, Grid, IconButton } from '@mui/material';
-import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, CircularProgress, Grid } from '@mui/material';
 
-const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceData, auth }) => {
+const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceData, auth, setImage }) => {
   const handleCheckInOut = async (type) => {
     if (!geoLocation) {
       alert('Geolocation is required');
@@ -42,6 +40,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
       if (data.success) {
         setAttendanceData(data.attendance);
         alert('Attendance recorded successfully');
+        setImage(null); // Reset the image after successful check-in/out
       } else {
         alert('Failed to record attendance');
       }
@@ -49,14 +48,6 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
       alert('Error recording attendance');
     }
     setLoading(false);
-  };
-
-  const clearData = async (type) => {
-    // Clear data logic here
-  };
-
-  const deleteData = async (type) => {
-    // Delete data logic here
   };
 
   return (
@@ -72,14 +63,6 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
           >
             {loading ? <CircularProgress size={24} /> : 'Check IN'}
           </Button>
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
-            <IconButton onClick={() => clearData('IN')} sx={{ mr: 2 }}>
-              <ClearIcon />
-            </IconButton>
-            <IconButton onClick={() => deleteData('IN')} sx={{ mr: 2 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
         </Grid>
         <Grid item xs={12} md={3}>
           <Button
@@ -91,14 +74,6 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
           >
             {loading ? <CircularProgress size={24} /> : 'Check OUT'}
           </Button>
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
-            <IconButton onClick={() => clearData('OUT')} sx={{ mr: 2 }}>
-              <ClearIcon />
-            </IconButton>
-            <IconButton onClick={() => deleteData('OUT')} sx={{ mr: 2 }}>
-              <DeleteIcon />
-            </IconButton>
-          </Box>
         </Grid>
       </Grid>
     </Box>

@@ -13,9 +13,8 @@ const Cart = () => {
     <Card onClick={handleClick} sx={{ maxWidth: 345, mt: 2 }}>
       <CardActionArea>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6">Attendance</Typography>
+          <Typography variant="h4">Mark Attendance</Typography>
           <Typography variant="body1">
-            Click here to mark your Attendance.
           </Typography>
         </Box>
       </CardActionArea>

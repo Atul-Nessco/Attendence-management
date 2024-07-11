@@ -3,6 +3,7 @@ import { Box, Button, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import Webcam from 'react-webcam';
 
 const CapturePhoto = ({ image, setImage }) => {
@@ -23,37 +24,46 @@ const CapturePhoto = ({ image, setImage }) => {
 
   return (
     <>
-    <Box
-      sx={{
-        mt: 2,
-        display: 'flex',
-        flexDirection: isLargeScreen ? 'row' : 'column',
-        justifyContent: 'Left',
-        alignItems: 'center',
-        gap: 2,
-      }}
-    >
-      <Webcam
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={isSmallScreen ? '100%' : isMediumScreen ? '80%' : '60%'}
-        height="auto"
-        videoConstraints={{ facingMode: 'user' }}
-        style={{ borderRadius: theme.shape.borderRadius }}
-      />
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
+      <Box
+        sx={{
+          mt: 2,
+          display: 'grid',
+          gridTemplateColumns: isSmallScreen ? '1fr 1fr' : '1fr',
+          gap: 2,
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            width={isSmallScreen ? '100%' : isMediumScreen ? '80%' : '60%'}
+            height="auto"
+            videoConstraints={{ facingMode: 'user' }}
+            style={{ borderRadius: theme.shape.borderRadius , paddingBottom: '24%'}}
+          />
+        </Box>
         {image && (
-          <Box sx={{ textAlign: 'center', mt: isLargeScreen ? 0 : 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             <img
               src={image}
               alt="Captured"
               style={{
-                width: isSmallScreen ? '100%' : isMediumScreen ? '80%' : '90%',
+                width: isSmallScreen ? '100%' : isMediumScreen ? '80%' : '60%',
                 height: 'auto',
                 borderRadius: theme.shape.borderRadius,
-                marginLeft: isLargeScreen ? 16 : 0, // Add space between image and webcam on large screens
               }}
             />
             <IconButton color="secondary" onClick={deleteImage}>
@@ -61,13 +71,15 @@ const CapturePhoto = ({ image, setImage }) => {
             </IconButton>
           </Box>
         )}
-        
       </Box>
-    </Box>
-    <Button variant="contained" onClick={capture} sx={{ mb: isLargeScreen ? 0 : 2 }}>
-    Capture Photo
-  </Button>
-  </>
+      <Button
+        variant="contained"
+        onClick={capture}
+        sx={{ mt: 2 }}
+      >
+        <CameraAltIcon />
+      </Button>
+    </>
   );
 };
 
