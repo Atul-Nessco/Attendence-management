@@ -2,6 +2,7 @@ const Attendance = require('../models/Attendance');
 const Log = require('../models/Log');
 const { googleSheetsClient } = require('../config/googleSheets');
 const { createLog } = require('./logController');
+const { getDistance } = require('geolib');
 
 const { sheets } = googleSheetsClient();
 
@@ -10,7 +11,6 @@ const createMapsLink = (latitude, longitude) => {
 };
 
 const getISTTime = (date = new Date()) => {
-  // const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
   return new Date(date.getTime());
 };
 
@@ -37,7 +37,7 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
 
   const sheetData = await sheets.spreadsheets.values.get({
     spreadsheetId: process.env.SPREADSHEET_ID,
-    range: 'Sheet2!A:L',
+    range: 'Sheet2!A:N', // Update the range to include the new columns
   });
   const rows = sheetData.data.values;
   const rowIndex = rows.findIndex(row => row[0] === employeeId && row[2] && new Date(row[2]).toDateString() === start.toDateString());
@@ -53,13 +53,15 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
     outTimeFormatted,
     attendance.geoLocationOut,
     attendance.photoUrlOut,
-    'OUT'
+    'OUT',
+    attendance.locationStatusIn || '', // Include the locationStatusIn or an empty string
+    attendance.locationStatusOut || '' // Include the locationStatusOut or an empty string
   ];
 
   if (rowIndex !== -1) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: `Sheet2!A${rowIndex + 1}:L${rowIndex + 1}`, // Update the range as necessary
+      range: `Sheet2!A${rowIndex + 1}:N${rowIndex + 1}`, // Update the range as necessary
       valueInputOption: 'USER_ENTERED',
       resource: {
         values: [updatedRow],
@@ -68,7 +70,7 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
   } else {
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: 'Sheet2!A:L', // Adjust range as necessary
+      range: 'Sheet2!A:N', // Adjust range as necessary
       valueInputOption: 'USER_ENTERED',
       resource: {
         values: [updatedRow],
@@ -77,12 +79,23 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
   }
 };
 
+const isWithin1km = (latitude, longitude) => {
+  const nesscoLocation = { latitude: 26.7861247, longitude: 75.8649242 };
+  const distance = getDistance(
+    { latitude, longitude },
+    nesscoLocation
+  );
+  return distance <= 1000; // Distance in meters
+};
+
 const createAttendance = async (req, res) => {
   const { employeeId, employeeName, geoLocation, photo, type, status } = req.body;
 
   try {
-    const mapsLink = createMapsLink(geoLocation.latitude, geoLocation.longitude);
+    const mapsLink = geoLocation ? createMapsLink(geoLocation.latitude, geoLocation.longitude) : null;
     const currentTimeIST = getISTTime();
+
+    const locationStatus = geoLocation ? (isWithin1km(geoLocation.latitude, geoLocation.longitude) ? 'inhouse' : 'field') : null;
 
     // Start and end of the current day in IST
     const start = new Date(currentTimeIST);
@@ -106,16 +119,20 @@ const createAttendance = async (req, res) => {
         photoUrlIn: type === 'IN' ? photo : null,
         photoUrlOut: type === 'OUT' ? photo : null,
         status: status || 'normal',
+        locationStatusIn: type === 'IN' ? locationStatus : null,
+        locationStatusOut: type === 'OUT' ? locationStatus : null
       });
     } else {
       if (type === 'IN') {
         attendance.inTime = formatDateForMongo(currentTimeIST);
         attendance.geoLocationIn = mapsLink;
         attendance.photoUrlIn = photo;
+        attendance.locationStatusIn = locationStatus;
       } else if (type === 'OUT') {
         attendance.outTime = formatDateForMongo(currentTimeIST);
         attendance.geoLocationOut = mapsLink;
         attendance.photoUrlOut = photo;
+        attendance.locationStatusOut = locationStatus;
       }
       attendance.status = status || 'normal';
     }
@@ -144,10 +161,12 @@ const updateAttendance = async (req, res) => {
         attendance.inTime = null;
         attendance.geoLocationIn = null;
         attendance.photoUrlIn = null;
+        attendance.locationStatusIn = null;
       } else if (type === 'OUT') {
         attendance.outTime = null;
         attendance.geoLocationOut = null;
         attendance.photoUrlOut = null;
+        attendance.locationStatusOut = null;
       }
       await attendance.save();
       await createLog(employeeId, attendance.employeeName, `${type} ${action}`, status || 'normal', attendance.geoLocationIn, attendance.photoUrlIn, attendance.inTime, attendance.outTime);
@@ -192,14 +211,21 @@ const updateAttendanceFromLog = async (req, res) => {
       return res.status(404).json({ message: 'Attendance record not found' });
     }
 
+    const geoLocationMatch = log.geoLocation.match(/q=([-.\d]+),([-.\d]+)/);
+    const latitude = geoLocationMatch ? parseFloat(geoLocationMatch[1]) : null;
+    const longitude = geoLocationMatch ? parseFloat(geoLocationMatch[2]) : null;
+    const locationStatus = latitude && longitude ? (isWithin1km(latitude, longitude) ? 'inhouse' : 'field') : null;
+
     if (action === 'CheckIn') {
       attendance.inTime = formatDateForMongo(new Date(log.timestamp));
       attendance.geoLocationIn = log.geoLocation;
       attendance.photoUrlIn = log.photoUrl;
+      attendance.locationStatusIn = locationStatus;
     } else if (action === 'CheckOut') {
       attendance.outTime = formatDateForMongo(new Date(log.timestamp));
       attendance.geoLocationOut = log.geoLocation;
       attendance.photoUrlOut = log.photoUrl;
+      attendance.locationStatusOut = locationStatus;
     }
     attendance.status = 'Append';
     await attendance.save();
@@ -213,4 +239,43 @@ const updateAttendanceFromLog = async (req, res) => {
   }
 };
 
-module.exports = { createAttendance, updateAttendance, updateAttendanceFromLog, getAttendanceByEmployeeId };
+const getTodayAttendance = async (req, res) => {
+  const { employeeId } = req.params;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  try {
+    const attendance = await Attendance.findOne({
+      employeeId,
+      inTime: { $gte: start, $lte: end },
+    });
+
+    if (!attendance) {
+      return res.status(404).json({ message: 'Attendance record not found' });
+    }
+
+    res.json({
+      checkedIn: {
+        inTime: attendance.inTime,
+        geoLocationIn: attendance.geoLocationIn,
+        photoUrlIn: attendance.photoUrlIn,
+        locationStatusIn: attendance.locationStatusIn,
+      },
+      checkedOut: attendance.outTime
+        ? {
+            outTime: attendance.outTime,
+            geoLocationOut: attendance.geoLocationOut,
+            photoUrlOut: attendance.photoUrlOut,
+            locationStatusOut: attendance.locationStatusOut,
+          }
+        : null,
+    });
+  } catch (error) {
+    console.error('Error fetching today\'s attendance:', error);
+    res.status(500).json({ message: 'Error fetching today\'s attendance' });
+  }
+};
+
+module.exports = { createAttendance, updateAttendance, updateAttendanceFromLog, getAttendanceByEmployeeId, getTodayAttendance };

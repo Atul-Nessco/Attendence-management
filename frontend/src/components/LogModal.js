@@ -11,19 +11,15 @@ const LogModal = ({ modalOpen, setModalOpen, auth }) => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [inputEmployeeId, setInputEmployeeId] = useState('');
   const [verificationError, setVerificationError] = useState(null);
+  const [checkedInData, setCheckedInData] = useState(null);
+  const [checkedOutData, setCheckedOutData] = useState(null);
 
   useEffect(() => {
-    if (auth && actionType) {
+    if (auth) {
       fetchLogs(actionType);
+      fetchTodayAttendance();
     }
   }, [actionType, auth]);
-
-  useEffect(() => {
-    const savedLogId = localStorage.getItem(`selectedLog-${auth.employeeId}-${actionType}`);
-    if (savedLogId) {
-      setSelectedLog(savedLogId);
-    }
-  }, [actionType, auth.employeeId]);
 
   const fetchLogs = async (action) => {
     setLoading(true);
@@ -43,6 +39,18 @@ const LogModal = ({ modalOpen, setModalOpen, auth }) => {
       console.error('Error fetching logs:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTodayAttendance = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const response = await axios.get(`http://localhost:5000/api/attendance/${auth.employeeId}/today`);
+      const data = response.data;
+      setCheckedInData(data.checkedIn);
+      setCheckedOutData(data.checkedOut);
+    } catch (error) {
+      console.error('Error fetching today\'s attendance:', error);
     }
   };
 
@@ -74,12 +82,13 @@ const LogModal = ({ modalOpen, setModalOpen, auth }) => {
         await axios.post('http://localhost:5000/api/logs/update-selection', { logId: selectedLog });
         setConfirmationOpen(false);
         setModalOpen(false);
-        alert('Log updated successfully');
+        alert('Log and attendance updated successfully');
       } else {
         setVerificationError('Employee ID verification failed');
       }
     } catch (error) {
       setVerificationError('Error verifying employee ID');
+      console.error('Error verifying employee ID:', error);
     }
   };
 

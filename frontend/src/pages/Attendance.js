@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Typography, Grid, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Typography, Grid, IconButton, Menu, MenuItem, useMediaQuery, Paper } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AuthContext from '../context/AuthContext';
@@ -15,35 +15,26 @@ const Attendance = () => {
   const [geoError, setGeoError] = useState(null);
   const [image, setImage] = useState(null);
   const [attendanceData, setAttendanceData] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [checkedInData, setCheckedInData] = useState(null);
+  const [checkedOutData, setCheckedOutData] = useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [actionType, setActionType] = useState('');
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     getLocation();
-    fetchAttendanceData();
+    fetchTodayAttendance();
   }, []);
 
-  const fetchAttendanceData = async () => {
+  const fetchTodayAttendance = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/attendance/${auth.employeeId}`);
+      const response = await fetch(`http://localhost:5000/api/attendance/today/${auth.employeeId}`);
       const data = await response.json();
-      setAttendanceData(data);
+      setCheckedInData(data.checkedIn);
+      setCheckedOutData(data.checkedOut);
     } catch (error) {
-      console.error('Error fetching attendance data:', error);
-    }
-  };
-
-  const fetchLogs = async (action) => {
-    const today = new Date().toISOString().split('T')[0];
-    try {
-      const response = await fetch(`http://localhost:5000/api/logs/${auth.employeeId}/${today}?action=${action}`);
-      const data = await response.json();
-      setLogs(data.logs);
-    } catch (error) {
-      console.error('Error fetching logs:', error);
+      console.error('Error fetching today\'s attendance:', error);
     }
   };
 
@@ -74,6 +65,11 @@ const Attendance = () => {
     }
   };
 
+  const getDriveViewerLink = (driveLink) => {
+    const fileIdMatch = driveLink.match(/[-\w]{25,}/);
+    return fileIdMatch ? `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}` : driveLink;
+  };
+
   return (
     <Box sx={{ p: 2, [theme.breakpoints.up('md')]: { p: 4 } }}>
       <Typography variant="h4" gutterBottom align="center">
@@ -87,10 +83,52 @@ const Attendance = () => {
               <MoreVertIcon />
             </IconButton>
             <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
-              <MenuItem onClick={() => setModalOpen(true)}>View Logs</MenuItem>
+              <MenuItem onClick={() => { setModalOpen(true); handleMenuClose(); }}>View Logs</MenuItem>
             </Menu>
           </Box>
           <GeolocationDisplay geoLocation={geoLocation} geoError={geoError} />
+          <Box mt={2}>
+            <Typography variant="h6">Last Checked IN Data</Typography>
+            {checkedInData ? (
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={8}>
+                  <Typography variant="body2">Time: {new Date(checkedInData.inTime).toLocaleString()}</Typography>
+                  <Typography variant="body2">Geo Location: <a href={checkedInData.geoLocationIn} target="_blank" rel="noopener noreferrer">View Location</a></Typography>
+                  <Typography variant="body2">Location Status: {checkedInData.locationStatusIn}</Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Paper>
+                    <a href={getDriveViewerLink(checkedInData.photoUrlIn)} target="_blank" rel="noopener noreferrer">
+                      <img src={getDriveViewerLink(checkedInData.photoUrlIn)} alt="Check IN" style={{ width: '100%', height: 'auto' }} />
+                    </a>
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              <Typography variant="body2">Data not found</Typography>
+            )}
+          </Box>
+          <Box mt={2}>
+            <Typography variant="h6">Last Checked OUT Data</Typography>
+            {checkedOutData ? (
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={8}>
+                  <Typography variant="body2">Time: {new Date(checkedOutData.outTime).toLocaleString()}</Typography>
+                  <Typography variant="body2">Geo Location: <a href={checkedOutData.geoLocationOut} target="_blank" rel="noopener noreferrer">View Location</a></Typography>
+                  <Typography variant="body2">Location Status: {checkedOutData.locationStatusOut}</Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Paper>
+                    <a href={getDriveViewerLink(checkedOutData.photoUrlOut)} target="_blank" rel="noopener noreferrer">
+                      <img src={`https://drive.google.com/uc?export=view&id=${checkedOutData.photoUrlOut.match(/[-\w]{25,}/)[0]}`} alt="Check OUT" style={{ width: '100%', height: 'auto' }} />
+                    </a>
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              <Typography variant="body2">Data not found</Typography>
+            )}
+          </Box>
           <CapturePhoto image={image} setImage={setImage} />
           <ActionButtons
             loading={loading}
@@ -99,15 +137,15 @@ const Attendance = () => {
             setLoading={setLoading}
             setAttendanceData={setAttendanceData}
             auth={auth}
-            setImage={setImage} // Pass setImage to ActionButtons
+            setImage={setImage}
+            checkedInData={checkedInData}
+            checkedOutData={checkedOutData}
           />
         </Grid>
       </Grid>
       <LogModal
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
-        logs={logs}
-        fetchLogs={fetchLogs}
         auth={auth}
       />
     </Box>

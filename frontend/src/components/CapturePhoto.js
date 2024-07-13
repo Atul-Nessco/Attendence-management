@@ -27,14 +27,16 @@ const CapturePhoto = ({ image, setImage }) => {
       <Box
         sx={{
           mt: 2,
-          display: 'grid',
-          gridTemplateColumns: isSmallScreen ? '1fr 1fr' : '1fr',
-          gap: 2,
+          display: 'flex',
+          flexDirection: isSmallScreen ? 'row' : 'row',
+          justifyContent: 'left',
           alignItems: 'center',
+          gap: 2,
         }}
       >
         <Box
           sx={{
+            flexBasis: '50%',
             display: 'flex',
             justifyContent: 'center',
           }}
@@ -43,42 +45,54 @@ const CapturePhoto = ({ image, setImage }) => {
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            width={isSmallScreen ? '100%' : isMediumScreen ? '80%' : '60%'}
-            height="auto"
-            videoConstraints={{ facingMode: 'user' }}
-            style={{ borderRadius: theme.shape.borderRadius , paddingBottom: '24%'}}
+            style={{
+              width: '100%',
+              height: 'auto',
+              borderRadius: theme.shape.borderRadius,
+            }}
           />
         </Box>
         {image && (
           <Box
             sx={{
+              flexBasis: '50%',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <img
               src={image}
               alt="Captured"
               style={{
-                width: isSmallScreen ? '100%' : isMediumScreen ? '80%' : '60%',
+                width: '100%',
                 height: 'auto',
                 borderRadius: theme.shape.borderRadius,
               }}
             />
-            <IconButton color="secondary" onClick={deleteImage}>
-              <DeleteIcon />
-            </IconButton>
           </Box>
         )}
       </Box>
-      <Button
-        variant="contained"
-        onClick={capture}
-        sx={{ mt: 2 }}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mt: 2,
+        }}
       >
-        <CameraAltIcon />
-      </Button>
+        <Button
+          variant="contained"
+          onClick={capture}
+        >
+          <CameraAltIcon />
+        </Button>
+        {image && (
+          <IconButton color="secondary" onClick={deleteImage}>
+            <DeleteIcon />
+          </IconButton>
+        )}
+      </Box>
     </>
   );
 };

@@ -27,6 +27,18 @@ const AttendanceSchema = new mongoose.Schema({
   photoUrlOut: {
     type: String,
   },
+  locationStatusIn: {
+    type: String,
+    enum: ['inhouse', 'field'],
+  },
+  locationStatusOut: {
+    type: String,
+    enum: ['inhouse', 'field'],
+  },
+  status: {
+    type: String,
+    default: 'normal',
+  },
 });
 
 module.exports = mongoose.model('Attendance', AttendanceSchema);
