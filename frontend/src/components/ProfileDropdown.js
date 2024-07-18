@@ -5,7 +5,6 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
-import { VisibilityOffSharp } from '@mui/icons-material';
 
 const ProfileDropdown = () => {
   const { auth, logout } = useContext(AuthContext);
@@ -145,7 +144,7 @@ const ProfileDropdown = () => {
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     edge="end"
                   >
-                    {showCurrentPassword ? <Visibility /> : <VisibilityOffSharp />}
+                    {showCurrentPassword ? <Visibility /> : <VisibilityOff />}
                   </IconButton>
                 </InputAdornment>
               ),
