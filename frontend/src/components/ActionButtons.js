@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, CircularProgress, Grid } from '@mui/material';
 
-const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceData, auth, setImage, checkedInData, checkedOutData }) => {
+const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceData, auth, setImage, checkedInData, checkedOutData, fetchTodayAttendance, onActionCompleted }) => {
   const handleCheckInOut = async (type) => {
     if (!geoLocation) {
       alert('Geolocation is required');
@@ -41,6 +41,8 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
         setAttendanceData(data.attendance);
         alert('Attendance recorded successfully');
         setImage(null); // Reset the image after successful check-in/out
+        fetchTodayAttendance(); // Refresh the attendance data
+        onActionCompleted(); // Trigger log refresh
       } else {
         alert('Failed to record attendance');
       }
@@ -61,7 +63,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
             disabled={loading || !geoLocation}
             fullWidth
           >
-            {loading ? <CircularProgress size={24} /> : checkedInData ? 'Update Checked IN' : 'Check IN'}
+            {loading ? <CircularProgress size={24} /> : checkedInData ? 'Update IN' : 'IN'}
           </Button>
         </Grid>
         <Grid item xs={6} md={3}>
@@ -72,7 +74,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
             disabled={loading || !geoLocation || !checkedInData}
             fullWidth
           >
-            {loading ? <CircularProgress size={24} /> : checkedOutData ? 'Update Checked OUT' : 'Check OUT'}
+            {loading ? <CircularProgress size={24} /> : checkedOutData ? 'Update OUT' : 'OUT'}
           </Button>
         </Grid>
       </Grid>

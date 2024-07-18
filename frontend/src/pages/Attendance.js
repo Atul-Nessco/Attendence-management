@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Typography, Grid, IconButton, Menu, MenuItem, useMediaQuery, Paper } from '@mui/material';
+import { Box, Typography, Grid, IconButton, Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AuthContext from '../context/AuthContext';
@@ -19,6 +19,7 @@ const Attendance = () => {
   const [checkedOutData, setCheckedOutData] = useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [refreshLogs, setRefreshLogs] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -67,7 +68,11 @@ const Attendance = () => {
 
   const getDriveViewerLink = (driveLink) => {
     const fileIdMatch = driveLink.match(/[-\w]{25,}/);
-    return fileIdMatch ? `https://drive.google.com/uc?export=view&id=${fileIdMatch[0]}` : driveLink;
+    return fileIdMatch ? `https://drive.google.com/thumbnail?id=${fileIdMatch[0]}` : driveLink;
+  };
+
+  const handleRefreshLogs = () => {
+    setRefreshLogs(prev => !prev);
   };
 
   return (
@@ -87,6 +92,24 @@ const Attendance = () => {
             </Menu>
           </Box>
           <GeolocationDisplay geoLocation={geoLocation} geoError={geoError} />
+          {isMobile && (
+            <>
+              <ActionButtons
+                loading={loading}
+                geoLocation={geoLocation}
+                image={image}
+                setLoading={setLoading}
+                setAttendanceData={setAttendanceData}
+                auth={auth}
+                setImage={setImage}
+                checkedInData={checkedInData}
+                checkedOutData={checkedOutData}
+                fetchTodayAttendance={fetchTodayAttendance}
+                onActionCompleted={handleRefreshLogs}
+              />
+              <CapturePhoto image={image} setImage={setImage} />
+            </>
+          )}
           <Box mt={2}>
             <Typography variant="h6">Last Checked IN Data</Typography>
             {checkedInData ? (
@@ -97,11 +120,11 @@ const Attendance = () => {
                   <Typography variant="body2">Location Status: {checkedInData.locationStatusIn}</Typography>
                 </Grid>
                 <Grid item xs={4}>
-                  <Paper>
-                    <a href={getDriveViewerLink(checkedInData.photoUrlIn)} target="_blank" rel="noopener noreferrer">
+                  <div>
+                    {/* <a href={getDriveViewerLink(checkedInData.photoUrlIn)} target="_blank" rel="noopener noreferrer"> */}
                       <img src={getDriveViewerLink(checkedInData.photoUrlIn)} alt="Check IN" style={{ width: '100%', height: 'auto' }} />
-                    </a>
-                  </Paper>
+                    {/* </a> */}
+                  </div>
                 </Grid>
               </Grid>
             ) : (
@@ -118,35 +141,42 @@ const Attendance = () => {
                   <Typography variant="body2">Location Status: {checkedOutData.locationStatusOut}</Typography>
                 </Grid>
                 <Grid item xs={4}>
-                  <Paper>
-                    <a href={getDriveViewerLink(checkedOutData.photoUrlOut)} target="_blank" rel="noopener noreferrer">
-                      <img src={`https://drive.google.com/uc?export=view&id=${checkedOutData.photoUrlOut.match(/[-\w]{25,}/)[0]}`} alt="Check OUT" style={{ width: '100%', height: 'auto' }} />
-                    </a>
-                  </Paper>
+                  <div>
+                    {/* <a href={getDriveViewerLink(checkedOutData.photoUrlOut)} target="_blank" rel="noopener noreferrer"> */}
+                      <img src={getDriveViewerLink(checkedOutData.photoUrlOut)} alt="Check OUT" style={{ width: '100%', height: 'auto' }} />
+                    {/* </a> */}
+                  </div>
                 </Grid>
               </Grid>
             ) : (
               <Typography variant="body2">Data not found</Typography>
             )}
           </Box>
-          <CapturePhoto image={image} setImage={setImage} />
-          <ActionButtons
-            loading={loading}
-            geoLocation={geoLocation}
-            image={image}
-            setLoading={setLoading}
-            setAttendanceData={setAttendanceData}
-            auth={auth}
-            setImage={setImage}
-            checkedInData={checkedInData}
-            checkedOutData={checkedOutData}
-          />
+          {!isMobile && (
+            <>
+              <CapturePhoto image={image} setImage={setImage} />
+              <ActionButtons
+                loading={loading}
+                geoLocation={geoLocation}
+                image={image}
+                setLoading={setLoading}
+                setAttendanceData={setAttendanceData}
+                auth={auth}
+                setImage={setImage}
+                checkedInData={checkedInData}
+                checkedOutData={checkedOutData}
+                fetchTodayAttendance={fetchTodayAttendance}
+                onActionCompleted={handleRefreshLogs}
+              />
+            </>
+          )}
         </Grid>
       </Grid>
       <LogModal
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
         auth={auth}
+        refreshLogs={refreshLogs}
       />
     </Box>
   );

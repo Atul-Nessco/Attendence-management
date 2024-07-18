@@ -16,7 +16,7 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black' }}>
+    <AppBar position="fixed" sx={{ backgroundColor: 'white', color: 'black' }}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <img src="https://www.nesscoindia.com/Assets/images/logo.webp" alt="Nessco Logo" className="logo" style={{ height: '40px', verticalAlign: 'middle' }} />

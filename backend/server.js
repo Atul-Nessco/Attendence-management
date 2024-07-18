@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const routes = require('./routes');
 const authRoutes = require('./routes/authRoutes'); // Ensure this line is added
 const attendanceRoutes = require('./routes/attendanceRoutes'); // Ensure this line is added
 const { connectDB } = require('./config/db');

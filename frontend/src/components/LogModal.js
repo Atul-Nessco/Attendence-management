@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Modal, CircularProgress, Button, TextField, ToggleButton, ToggleButtonGroup, Checkbox } from '@mui/material';
 import axios from 'axios';
 
-const LogModal = ({ modalOpen, setModalOpen, auth }) => {
+const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs }) => {
   const [actionType, setActionType] = useState('Checked IN');
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth }) => {
       fetchLogs(actionType);
       fetchTodayAttendance();
     }
-  }, [actionType, auth]);
+  }, [actionType, auth, refreshLogs]); // Update on refreshLogs change
 
   const fetchLogs = async (action) => {
     setLoading(true);
