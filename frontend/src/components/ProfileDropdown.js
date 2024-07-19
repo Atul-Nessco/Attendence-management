@@ -7,6 +7,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 
 const ProfileDropdown = () => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const { auth, logout } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -39,7 +40,7 @@ const ProfileDropdown = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/change-password', {
+      const response = await axios.post(`${baseUrl}api/auth/change-password`, {
         employeeId: auth.employeeId,
         currentPassword,
         newPassword,

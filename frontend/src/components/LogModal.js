@@ -3,6 +3,7 @@ import { Box, Typography, Modal, CircularProgress, Button, TextField, ToggleButt
 import axios from 'axios';
 
 const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttendance }) => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const [actionType, setActionType] = useState('Checked IN');
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:8000/api/logs/${auth.employeeId}/${action}`);
+      const response = await axios.get(`${baseUrl}api/logs/${auth.employeeId}/${action}`);
       const logs = response.data.logs;
       setFilteredLogs(logs);
       const savedLogId = localStorage.getItem(`selectedLog-${auth.employeeId}-${action}`);
@@ -61,12 +62,12 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
 
   const handleVerification = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/logs/verify-employee-id', {
+      const response = await axios.post(`${baseUrl}api/logs/verify-employee-id`, {
         employeeId: auth.employeeId,
         inputEmployeeId
       });
       if (response.data.verified) {
-        await axios.post('http://localhost:8000/api/logs/update-selection', { logId: selectedLog });
+        await axios.post(`${baseUrl}api/logs/update-selection`, { logId: selectedLog });
         setConfirmationOpen(false);
         setModalOpen(false);
         alert('Log and attendance updated successfully');

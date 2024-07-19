@@ -9,6 +9,7 @@ import ActionButtons from '../components/ActionButtons';
 import GeolocationDisplay from '../components/GeolocationDisplay';
 
 const Attendance = () => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const { auth } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [geoLocation, setGeoLocation] = useState(null);
@@ -30,7 +31,7 @@ const Attendance = () => {
 
   const fetchTodayAttendance = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/attendance/today/${auth.employeeId}`);
+      const response = await fetch(`${baseUrl}api/attendance/today/${auth.employeeId}`);
       const data = await response.json();
       setCheckedInData(data.checkedIn);
       setCheckedOutData(data.checkedOut);

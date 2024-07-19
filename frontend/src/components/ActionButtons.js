@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Button, CircularProgress, Grid } from '@mui/material';
 
 const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceData, auth, setImage, checkedInData, checkedOutData, fetchTodayAttendance, onActionCompleted }) => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const handleCheckInOut = async (type) => {
     if (!geoLocation) {
       alert('Geolocation is required');
@@ -13,7 +15,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
     }
     setLoading(true);
     try {
-      const photoResponse = await fetch('http://localhost:8000/api/upload-photo', {
+      const photoResponse = await fetch(`${baseUrl}api/upload-photo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,7 +24,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
       });
       const photoData = await photoResponse.json();
 
-      const response = await fetch('http://localhost:8000/api/attendance', {
+      const response = await fetch(`${baseUrl}api/attendance`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

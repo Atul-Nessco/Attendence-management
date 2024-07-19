@@ -3,6 +3,7 @@ import { Box, Typography, List, ListItem, ListItemText, Button, Modal, TextField
 import AuthContext from '../context/AuthContext';
 
 const Logs = () => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const { auth } = useContext(AuthContext);
   const [logs, setLogs] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
@@ -15,7 +16,7 @@ const Logs = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/logs/${auth.employeeId}`);
+      const response = await fetch(`${baseUrl}logs/${auth.employeeId}`);
       const data = await response.json();
       setLogs(data.logs);
     } catch (error) {
@@ -35,7 +36,7 @@ const Logs = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/attendance/updateFromLog', {
+      const response = await fetch(`${baseUrl}api/attendance/updateFromLog`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

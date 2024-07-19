@@ -5,6 +5,7 @@ import { Container, TextField, Button, Typography, Box, IconButton, InputAdornme
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login = () => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +21,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const response = await fetch(`${baseUrl}api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
