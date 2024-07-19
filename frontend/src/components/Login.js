@@ -20,7 +20,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const Login = () => {
           mt: 8,
         }}
       >
-        <Typography variant="h5" component="h1">
+        <Typography variant="h4" component="h1">
           Login
         </Typography>
         <TextField

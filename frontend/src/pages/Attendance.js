@@ -30,7 +30,7 @@ const Attendance = () => {
 
   const fetchTodayAttendance = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/attendance/today/${auth.employeeId}`);
+      const response = await fetch(`http://localhost:8000/api/attendance/today/${auth.employeeId}`);
       const data = await response.json();
       setCheckedInData(data.checkedIn);
       setCheckedOutData(data.checkedOut);

@@ -22,7 +22,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:5000/api/logs/${auth.employeeId}/${action}`);
+      const response = await axios.get(`http://localhost:8000/api/logs/${auth.employeeId}/${action}`);
       const logs = response.data.logs;
       setFilteredLogs(logs);
       const savedLogId = localStorage.getItem(`selectedLog-${auth.employeeId}-${action}`);
@@ -61,12 +61,12 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
 
   const handleVerification = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/logs/verify-employee-id', {
+      const response = await axios.post('http://localhost:8000/api/logs/verify-employee-id', {
         employeeId: auth.employeeId,
         inputEmployeeId
       });
       if (response.data.verified) {
-        await axios.post('http://localhost:5000/api/logs/update-selection', { logId: selectedLog });
+        await axios.post('http://localhost:8000/api/logs/update-selection', { logId: selectedLog });
         setConfirmationOpen(false);
         setModalOpen(false);
         alert('Log and attendance updated successfully');

@@ -18,7 +18,7 @@ const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     if (auth) {
-      await fetch('http://localhost:5000/api/auth/logout', {
+      await fetch('http://localhost:8000/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

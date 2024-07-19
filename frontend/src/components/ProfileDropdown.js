@@ -39,7 +39,7 @@ const ProfileDropdown = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/change-password', {
+      const response = await axios.post('http://localhost:8000/api/auth/change-password', {
         employeeId: auth.employeeId,
         currentPassword,
         newPassword,

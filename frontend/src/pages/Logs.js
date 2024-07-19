@@ -15,7 +15,7 @@ const Logs = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/logs/${auth.employeeId}`);
+      const response = await fetch(`http://localhost:8000/logs/${auth.employeeId}`);
       const data = await response.json();
       setLogs(data.logs);
     } catch (error) {
@@ -35,7 +35,7 @@ const Logs = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/attendance/updateFromLog', {
+      const response = await fetch('http://localhost:8000/api/attendance/updateFromLog', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

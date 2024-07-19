@@ -13,7 +13,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
     }
     setLoading(true);
     try {
-      const photoResponse = await fetch('http://localhost:5000/api/upload-photo', {
+      const photoResponse = await fetch('http://localhost:8000/api/upload-photo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
       });
       const photoData = await photoResponse.json();
 
-      const response = await fetch('http://localhost:5000/api/attendance', {
+      const response = await fetch('http://localhost:8000/api/attendance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
