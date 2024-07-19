@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Modal, CircularProgress, Button, TextField, ToggleButton, ToggleButtonGroup, Checkbox } from '@mui/material';
 import axios from 'axios';
 
-const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs }) => {
+const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttendance }) => {
   const [actionType, setActionType] = useState('Checked IN');
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -11,15 +11,12 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs }) => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [inputEmployeeId, setInputEmployeeId] = useState('');
   const [verificationError, setVerificationError] = useState(null);
-  const [checkedInData, setCheckedInData] = useState(null);
-  const [checkedOutData, setCheckedOutData] = useState(null);
 
   useEffect(() => {
     if (auth) {
       fetchLogs(actionType);
-      fetchTodayAttendance();
     }
-  }, [actionType, auth, refreshLogs]); // Update on refreshLogs change
+  }, [actionType, auth, refreshLogs]);
 
   const fetchLogs = async (action) => {
     setLoading(true);
@@ -32,25 +29,15 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs }) => {
       if (savedLogId && logs.some(log => log._id === savedLogId)) {
         setSelectedLog(savedLogId);
       } else if (logs.length > 0) {
-        setSelectedLog(logs[0]._id); // Select the first log if none is selected
+        setSelectedLog(logs[0]._id);
+      } else {
+        setSelectedLog(null);
       }
     } catch (error) {
       setError('Error fetching logs');
       console.error('Error fetching logs:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTodayAttendance = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    try {
-      const response = await axios.get(`http://localhost:5000/api/attendance/${auth.employeeId}/today`);
-      const data = response.data;
-      setCheckedInData(data.checkedIn);
-      setCheckedOutData(data.checkedOut);
-    } catch (error) {
-      console.error('Error fetching today\'s attendance:', error);
     }
   };
 
@@ -83,6 +70,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs }) => {
         setConfirmationOpen(false);
         setModalOpen(false);
         alert('Log and attendance updated successfully');
+        fetchTodayAttendance();
       } else {
         setVerificationError('Employee ID verification failed');
       }

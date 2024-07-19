@@ -10,8 +10,8 @@ const logSchema = new mongoose.Schema({
   photoUrl: { type: String },
   inTime: { type: String },
   outTime: { type: String },
-  locationStatusIn: { type: String, enum: ['inhouse', 'field'], default: 'field' },
-  locationStatusOut: { type: String, enum: ['inhouse', 'field'], default: 'field' }
+  locationStatusIn: { type: String, enum: ['inhouse', 'field'], default: 'inhouse' },
+  locationStatusOut: { type: String, enum: ['inhouse', 'field'], default: 'inhouse' }
 });
 
 module.exports = mongoose.model('Log', logSchema);

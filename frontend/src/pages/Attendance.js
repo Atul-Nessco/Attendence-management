@@ -121,9 +121,7 @@ const Attendance = () => {
                 </Grid>
                 <Grid item xs={4}>
                   <div>
-                    {/* <a href={getDriveViewerLink(checkedInData.photoUrlIn)} target="_blank" rel="noopener noreferrer"> */}
-                      <img src={getDriveViewerLink(checkedInData.photoUrlIn)} alt="Check IN" style={{ width: '100%', height: 'auto' }} />
-                    {/* </a> */}
+                    <img src={getDriveViewerLink(checkedInData.photoUrlIn)} alt="Check IN" style={{ width: '100%', height: 'auto' }} />
                   </div>
                 </Grid>
               </Grid>
@@ -142,9 +140,7 @@ const Attendance = () => {
                 </Grid>
                 <Grid item xs={4}>
                   <div>
-                    {/* <a href={getDriveViewerLink(checkedOutData.photoUrlOut)} target="_blank" rel="noopener noreferrer"> */}
-                      <img src={getDriveViewerLink(checkedOutData.photoUrlOut)} alt="Check OUT" style={{ width: '100%', height: 'auto' }} />
-                    {/* </a> */}
+                    <img src={getDriveViewerLink(checkedOutData.photoUrlOut)} alt="Check OUT" style={{ width: '100%', height: 'auto' }} />
                   </div>
                 </Grid>
               </Grid>
@@ -177,6 +173,7 @@ const Attendance = () => {
         setModalOpen={setModalOpen}
         auth={auth}
         refreshLogs={refreshLogs}
+        fetchTodayAttendance={fetchTodayAttendance}
       />
     </Box>
   );
