@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment } from '@mui/material';
+import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, CircularProgress } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login = () => {
@@ -9,6 +9,7 @@ const Login = () => {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { auth, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -20,6 +21,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch(`${baseUrl}api/auth/login`, {
         method: 'POST',
@@ -43,6 +45,8 @@ const Login = () => {
     } catch (error) {
       console.error('Error during login:', error);
       alert('An error occurred during login. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,14 +110,17 @@ const Login = () => {
             ),
           }}
         />
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 3, mb: 2 }}
-        >
-          Login
-        </Button>
+        <Box sx={{ m: 2, position: 'relative' }}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Login'}
+          </Button>
+        </Box>
       </Box>
     </Container>
   );

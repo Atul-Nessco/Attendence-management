@@ -12,6 +12,8 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [inputEmployeeId, setInputEmployeeId] = useState('');
   const [verificationError, setVerificationError] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
 
   useEffect(() => {
     if (auth) {
@@ -61,6 +63,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
   };
 
   const handleVerification = async () => {
+    setVerificationLoading(true);
     try {
       const response = await axios.post(`${baseUrl}api/logs/verify-employee-id`, {
         employeeId: auth.employeeId,
@@ -78,6 +81,8 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
     } catch (error) {
       setVerificationError('Error verifying employee ID');
       console.error('Error verifying employee ID:', error);
+    } finally {
+      setVerificationLoading(false);
     }
   };
 
@@ -158,8 +163,15 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
               <Typography>No data found for {actionType}.</Typography>
             )}
           </Box>
-          <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }} fullWidth>
-            Submit
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSubmit} 
+            sx={{ mt: 2 }} 
+            fullWidth
+            disabled={submitLoading}
+          >
+            {submitLoading ? <CircularProgress size={24} /> : 'Submit'}
           </Button>
         </Box>
       </Modal>
@@ -188,8 +200,14 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
             margin="normal"
           />
           {verificationError && <Typography color="error">{verificationError}</Typography>}
-          <Button variant="contained" color="primary" onClick={handleVerification} sx={{ mt: 2 }}>
-            Verify and Submit
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleVerification} 
+            sx={{ mt: 2 }}
+            disabled={verificationLoading}
+          >
+            {verificationLoading ? <CircularProgress size={24} /> : 'Verify and Submit'}
           </Button>
         </Box>
       </Modal>

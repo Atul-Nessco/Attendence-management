@@ -25,8 +25,9 @@ const Attendance = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    getLocation();
+    requestLocationPermission();
     fetchTodayAttendance();
+    requestCameraPermission();
   }, []);
 
   const fetchTodayAttendance = async () => {
@@ -48,7 +49,7 @@ const Attendance = () => {
     setMenuAnchorEl(null);
   };
 
-  const getLocation = () => {
+  const requestLocationPermission = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -59,11 +60,23 @@ const Attendance = () => {
           setGeoError(null);
         },
         (error) => {
-          setGeoError('Error getting geolocation. Please enable location services.');
+          if (error.code === error.PERMISSION_DENIED) {
+            setGeoError('Location access denied. Please enable location services.');
+          } else {
+            setGeoError('Error getting geolocation. Please try again.');
+          }
         }
       );
     } else {
       setGeoError('Geolocation is not supported by this browser');
+    }
+  };
+
+  const requestCameraPermission = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch (error) {
+      console.error('Error accessing camera:', error);
     }
   };
 
@@ -78,7 +91,7 @@ const Attendance = () => {
 
   return (
     <Box sx={{ p: 2, [theme.breakpoints.up('md')]: { p: 4 } }}>
-      <Typography variant="h4" gutterBottom align="center">
+      <Typography variant="h5" gutterBottom align="center">
         Attendance
       </Typography>
       <Grid container spacing={2} justifyContent="center">

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import AuthContext from '../context/AuthContext';
-import { Menu, MenuItem, IconButton, Typography, Modal, Box, TextField, Button, InputAdornment } from '@mui/material';
+import { Menu, MenuItem, IconButton, Typography, Modal, Box, TextField, Button, InputAdornment, CircularProgress } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -19,6 +19,7 @@ const ProfileDropdown = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -39,6 +40,7 @@ const ProfileDropdown = () => {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await axios.post(`${baseUrl}api/auth/change-password`, {
         employeeId: auth.employeeId,
@@ -55,6 +57,8 @@ const ProfileDropdown = () => {
       logout(); // Log out the user after changing the password
     } catch (error) {
       setPasswordError(error.response.data.message || 'Error changing password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -193,9 +197,17 @@ const ProfileDropdown = () => {
           />
           {passwordError && <Typography color="error">{passwordError}</Typography>}
           {successMessage && <Typography color="primary">{successMessage}</Typography>}
-          <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handlePasswordChange}>
-            Change Password
-          </Button>
+          <Box sx={{ m: 2, position: 'relative' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handlePasswordChange}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Change Password'}
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </div>
