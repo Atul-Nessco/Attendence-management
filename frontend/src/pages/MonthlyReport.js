@@ -22,7 +22,7 @@ import dayjs from 'dayjs';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext'; // Adjust the import according to your project structure
-import './MonthlyReport.css'; // Import the CSS file
+
 
 const MonthlyReport = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
