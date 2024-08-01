@@ -35,7 +35,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
           geoLocation,
           photo: photoData.photoUrl,
           type,
-          status: 'normal',
+          status: 'Normal',
         }),
       });
       const data = await response.json();

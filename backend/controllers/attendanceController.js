@@ -49,7 +49,7 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
     attendance.geoLocationIn,
     attendance.photoUrlIn,
     'IN',
-    status || 'normal',
+    status || 'Normal',
     outTimeFormatted,
     attendance.geoLocationOut,
     attendance.photoUrlOut,
@@ -118,7 +118,7 @@ const createAttendance = async (req, res) => {
         geoLocationOut: type === 'OUT' ? mapsLink : null,
         photoUrlIn: type === 'IN' ? photo : null,
         photoUrlOut: type === 'OUT' ? photo : null,
-        status: status || 'normal',
+        status: status || 'Normal',
         locationStatusIn: type === 'IN' ? locationStatus : null,
         locationStatusOut: type === 'OUT' ? locationStatus : null
       });
@@ -134,10 +134,10 @@ const createAttendance = async (req, res) => {
         attendance.photoUrlOut = photo;
         attendance.locationStatusOut = locationStatus;
       }
-      attendance.status = status || 'normal';
+      attendance.status = status || 'Normal';
     }
     await attendance.save();
-    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, formatDateForMongo(currentTimeIST), null);
+    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'Normal', mapsLink, photo, formatDateForMongo(currentTimeIST), null);
 
     await updateGoogleSheet(employeeId, employeeName, attendance, status);
 
@@ -169,7 +169,7 @@ const updateAttendance = async (req, res) => {
         attendance.locationStatusOut = null;
       }
       await attendance.save();
-      await createLog(employeeId, attendance.employeeName, `${type} ${action}`, status || 'normal', attendance.geoLocationIn, attendance.photoUrlIn, attendance.inTime, attendance.outTime);
+      await createLog(employeeId, attendance.employeeName, `${type} ${action}`, status || 'Normal', attendance.geoLocationIn, attendance.photoUrlIn, attendance.inTime, attendance.outTime);
     } else if (action === 'append') {
       attendance.status = status;
       await attendance.save();
