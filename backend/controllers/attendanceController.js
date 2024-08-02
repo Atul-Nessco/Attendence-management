@@ -28,12 +28,21 @@ const formatDateForSheet = (date) => {
   return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
+const addTimeOffset = (date) => {
+  const offsetTime = new Date(date.getTime());
+  return offsetTime;
+};
+
 const updateGoogleSheet = async (employeeId, employeeName, attendance, status) => {
   const start = new Date(attendance.inTime);
   start.setHours(0, 0, 0, 0);
 
-  const inTimeFormatted = attendance.inTime ? formatDateForSheet(getISTTime(new Date(attendance.inTime))) : '';
-  const outTimeFormatted = attendance.outTime ? formatDateForSheet(getISTTime(new Date(attendance.outTime))) : '';
+  // Ensure the time offset is applied only once before formatting
+  const inTimeAdjusted = attendance.inTime ? addTimeOffset(new Date(attendance.inTime)) : null;
+  const outTimeAdjusted = attendance.outTime ? addTimeOffset(new Date(attendance.outTime)) : null;
+
+  const inTimeFormatted = inTimeAdjusted ? formatDateForSheet(inTimeAdjusted) : '';
+  const outTimeFormatted = outTimeAdjusted ? formatDateForSheet(outTimeAdjusted) : '';
 
   const sheetData = await sheets.spreadsheets.values.get({
     spreadsheetId: process.env.SPREADSHEET_ID,

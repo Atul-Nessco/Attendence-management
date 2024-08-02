@@ -23,7 +23,6 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext'; // Adjust the import according to your project structure
 
-
 const MonthlyReport = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const { auth } = useContext(AuthContext); // Assuming auth context provides employeeId
@@ -83,6 +82,10 @@ const MonthlyReport = () => {
       default:
         return 'white';
     }
+  };
+
+  const convertToIST = (time) => {
+    return dayjs(time).add(5, 'hour').add(30, 'minute').format('HH:mm:ss');
   };
 
   return (
@@ -154,10 +157,10 @@ const MonthlyReport = () => {
                     {`${dayjs(row.Date).format('dddd')}, ${dayjs(row.Date).format('DD/MM/YYYY')}`}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
-                    {row.IN_Timing}
+                    {convertToIST(row.IN_Timing)}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
-                    {row.OUT_Timing}
+                    {convertToIST(row.OUT_Timing)}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
                     {row.IN_Photo ? <a href={row.IN_Photo} target="_blank" rel="noopener noreferrer">View</a> : null}
