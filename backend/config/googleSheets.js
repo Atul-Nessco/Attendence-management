@@ -1,24 +1,12 @@
-const { google } = require('googleapis');
-const fs = require('fs');
-const path = require('path');
+import { google } from 'googleapis';
 
 const googleSheetsClient = () => {
-  const credentialsPath = process.env.GOOGLE_SHEETS_CREDENTIALS;
-  console.log(`Credentials path: ${credentialsPath}`);
-
-  if (!credentialsPath) {
-    throw new Error('GOOGLE_SHEETS_CREDENTIALS environment variable is not set');
-  }
-
-  const fullPath = path.resolve(credentialsPath);
-  console.log(`Full credentials path: ${fullPath}`);
-
-  if (!fs.existsSync(fullPath)) {
-    throw new Error(`Credentials file not found at path: ${fullPath}`);
-  }
-
-  const credentials = JSON.parse(fs.readFileSync(fullPath));
+  const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS || '{}');
   const { client_email, private_key } = credentials;
+
+  if (!client_email || !private_key) {
+    throw new Error('Invalid GOOGLE_SHEETS_CREDENTIALS environment variable');
+  }
 
   const auth = new google.auth.JWT(
     client_email,
@@ -33,4 +21,5 @@ const googleSheetsClient = () => {
   return { sheets, drive };
 };
 
-module.exports = { googleSheetsClient };
+export { googleSheetsClient };
+
