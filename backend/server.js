@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-const { connectDB } = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT  || 9008;
@@ -30,7 +29,7 @@ function startServer(port) {
   });
 }
 
-connectDB();
+
 
 app.use(cors());
 
