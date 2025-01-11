@@ -35,7 +35,9 @@ connectDB();
 app.use(cors());
 
 app.use(express.json({ limit: '50mb' }));
-
+app.use('/testing', (req, res) => {
+  res.send('This is a test endpoint');
+});
 app.use('/api/auth', authRoutes);
 app.use('/api', attendanceRoutes);
 app.use('/api', reportRoutes);
