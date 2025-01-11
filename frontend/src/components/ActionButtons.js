@@ -65,7 +65,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
             disabled={loading || !geoLocation}
             fullWidth
           >
-            {loading ? <CircularProgress size={24} /> : checkedInData ? 'Update IN' : 'IN'}
+            {loading ? <CircularProgress size={24} /> : checkedInData ? 'Update IN' : 'IN'}    
           </Button>
         </Grid>
         <Grid item xs={6} md={3}>
@@ -76,7 +76,7 @@ const ActionButtons = ({ loading, geoLocation, image, setLoading, setAttendanceD
             disabled={loading || !geoLocation || !checkedInData}
             fullWidth
           >
-            {loading ? <CircularProgress size={24} /> : checkedOutData ? 'Update OUT' : 'OUT'}
+            {loading ? <CircularProgress size={24} /> : checkedOutData ? 'Update OUT' : 'OUT'} 
           </Button>
         </Grid>
       </Grid>

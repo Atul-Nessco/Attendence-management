@@ -5,14 +5,14 @@ const path = require('path');
 const googleSheetsClient = () => {
   const credentialsPath = process.env.GOOGLE_SHEETS_CREDENTIALS;
   console.log(`Credentials path: ${credentialsPath}`);
-  
+
   if (!credentialsPath) {
     throw new Error('GOOGLE_SHEETS_CREDENTIALS environment variable is not set');
   }
 
   const fullPath = path.resolve(credentialsPath);
   console.log(`Full credentials path: ${fullPath}`);
-  
+
   if (!fs.existsSync(fullPath)) {
     throw new Error(`Credentials file not found at path: ${fullPath}`);
   }
@@ -24,7 +24,7 @@ const googleSheetsClient = () => {
     client_email,
     null,
     private_key,
-    ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+    ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']  
   );
 
   const sheets = google.sheets({ version: 'v4', auth });

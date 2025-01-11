@@ -32,7 +32,7 @@ const Attendance = () => {
 
   const fetchTodayAttendance = async () => {
     try {
-      const response = await fetch(`${baseUrl}api/attendance/today/${auth.employeeId}`);
+      const response = await fetch(`${baseUrl}api/attendance/today/${auth.employeeId}`);       
       const data = await response.json();
       setCheckedInData(data.checkedIn);
       setCheckedOutData(data.checkedOut);

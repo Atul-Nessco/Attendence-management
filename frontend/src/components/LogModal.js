@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Modal, CircularProgress, Button, TextField, ToggleButton, ToggleButtonGroup, Checkbox } from '@mui/material';
 import axios from 'axios';
 
-const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttendance }) => {
+const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttendance }) => {   
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [actionType, setActionType] = useState('Checked IN');
   const [filteredLogs, setFilteredLogs] = useState([]);
@@ -25,10 +25,10 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${baseUrl}api/logs/${auth.employeeId}/${action}`);
+      const response = await axios.get(`${baseUrl}api/logs/${auth.employeeId}/${action}`);     
       const logs = response.data.logs;
       setFilteredLogs(logs);
-      const savedLogId = localStorage.getItem(`selectedLog-${auth.employeeId}-${action}`);
+      const savedLogId = localStorage.getItem(`selectedLog-${auth.employeeId}-${action}`);     
       if (savedLogId && logs.some(log => log._id === savedLogId)) {
         setSelectedLog(savedLogId);
       } else if (logs.length > 0) {
@@ -70,7 +70,7 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
         inputEmployeeId
       });
       if (response.data.verified) {
-        await axios.post(`${baseUrl}api/logs/update-selection`, { logId: selectedLog });
+        await axios.post(`${baseUrl}api/logs/update-selection`, { logId: selectedLog });       
         setConfirmationOpen(false);
         setModalOpen(false);
         alert('Log and attendance updated successfully');
@@ -139,14 +139,14 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
               filteredLogs.map((log) => (
                 <Box key={log._id} display="flex" flexDirection="column" sx={{ mb: 1, p: 1, border: '1px solid #ddd', borderRadius: 2 }}>
                   <Box display="flex" alignItems="center">
-                    <Checkbox 
-                      checked={selectedLog === log._id} 
-                      onChange={() => handleLogSelection(log._id)} 
+                    <Checkbox
+                      checked={selectedLog === log._id}
+                      onChange={() => handleLogSelection(log._id)}
                     />
                     <Typography sx={{ flex: 1, ml: 1, fontWeight: 'bold' }}>{formatDate(log.timestamp)}</Typography>
                   </Box>
-                  <Typography variant="body2">Employee ID: {log.employeeId}</Typography>
-                  <Typography variant="body2">Employee Name: {log.employeeName}</Typography>
+                  <Typography variant="body2">Employee ID: {log.employeeId}</Typography>       
+                  <Typography variant="body2">Employee Name: {log.employeeName}</Typography>   
                   <Typography variant="body2">Action: {log.action}</Typography>
                   <Typography variant="body2">Status: {log.status}</Typography>
                   {log.geoLocation && (
@@ -163,11 +163,11 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
               <Typography>No data found for {actionType}.</Typography>
             )}
           </Box>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleSubmit} 
-            sx={{ mt: 2 }} 
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            sx={{ mt: 2 }}
             fullWidth
             disabled={submitLoading}
           >
@@ -199,15 +199,15 @@ const LogModal = ({ modalOpen, setModalOpen, auth, refreshLogs, fetchTodayAttend
             fullWidth
             margin="normal"
           />
-          {verificationError && <Typography color="error">{verificationError}</Typography>}
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleVerification} 
+          {verificationError && <Typography color="error">{verificationError}</Typography>}    
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleVerification}
             sx={{ mt: 2 }}
             disabled={verificationLoading}
           >
-            {verificationLoading ? <CircularProgress size={24} /> : 'Verify and Submit'}
+            {verificationLoading ? <CircularProgress size={24} /> : 'Verify and Submit'}       
           </Button>
         </Box>
       </Modal>

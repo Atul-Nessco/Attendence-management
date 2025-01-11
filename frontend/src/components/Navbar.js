@@ -22,7 +22,7 @@ const Navbar = () => {
           <img src="https://www.nesscoindia.com/Assets/images/logo.webp" alt="Nessco Logo" className="logo" style={{ height: '40px', verticalAlign: 'middle' }} />
         </Typography>
         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-          <Button color="inherit" component={Link} to="/attendance">Attendance</Button>
+          <Button color="inherit" component={Link} to="/attendance">Attendance</Button>        
           <Button color="inherit" component={Link} to="/monthly-report">Monthly Report</Button>
           <Button color="inherit" component={Link} to="/another-route">More</Button>
         </Box>

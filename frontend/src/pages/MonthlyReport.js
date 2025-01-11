@@ -23,9 +23,10 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext'; // Adjust the import according to your project structure
 
+
 const MonthlyReport = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
-  const { auth } = useContext(AuthContext); // Assuming auth context provides employeeId
+  const { auth } = useContext(AuthContext); // Assuming auth context provides employeeId       
   const [data, setData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [totals, setTotals] = useState({ present: 0, absent: 0, halfDay: 0 });
@@ -84,10 +85,6 @@ const MonthlyReport = () => {
     }
   };
 
-  const convertToIST = (time) => {
-    return dayjs(time).add(5, 'hour').add(30, 'minute').format('HH:mm:ss');
-  };
-
   return (
     <Box p={2} sx={{ overflowX: 'auto' }}>
       <Grid container justifyContent="space-between" alignItems="center" mb={2}>
@@ -97,7 +94,7 @@ const MonthlyReport = () => {
               views={['year', 'month']}
               label="Select Month and Year"
               minDate={dayjs('2020-01-01')}
-              maxDate={dayjs('2030-12-31')}
+              maxDate={dayjs('2050-12-31')}
               value={selectedDate}
               onChange={(newValue) => setSelectedDate(newValue)}
               renderInput={(params) => (
@@ -116,7 +113,7 @@ const MonthlyReport = () => {
             />
           </LocalizationProvider>
         </Grid>
-        <Grid item xs={6} container direction="column" alignItems="flex-end" sx={{ pl: 1 }}>
+        <Grid item xs={6} container direction="column" alignItems="flex-end" sx={{ pl: 1 }}>   
           <Box sx={{ backgroundColor: getRowColor('Present'), p: 0.5, mb: 1, borderRadius: '4px', textAlign: 'center' }}>
             <Typography sx={{ fontSize: '0.75rem', color: 'black' }}>Present: {totals.present}</Typography>
           </Box>
@@ -137,8 +134,8 @@ const MonthlyReport = () => {
                   <TableCell
                     key={header}
                     sx={{
-                      fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem',
-                      padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px',
+                      fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem',      
+                      padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px',        
                       fontWeight: 'bold',
                       borderRight: '1px solid #ddd',
                       whiteSpace: 'nowrap',
@@ -151,16 +148,16 @@ const MonthlyReport = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => ( 
                 <TableRow key={row.Date} sx={{ backgroundColor: getRowColor(row.AttendenceStatus) }}>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
                     {`${dayjs(row.Date).format('dddd')}, ${dayjs(row.Date).format('DD/MM/YYYY')}`}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
-                    {convertToIST(row.IN_Timing)}
+                    {row.IN_Timing}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
-                    {convertToIST(row.OUT_Timing)}
+                    {row.OUT_Timing}
                   </TableCell>
                   <TableCell sx={{ fontSize: isMobile ? '0.65rem' : isTablet ? '0.75rem' : '0.875rem', padding: isMobile ? '2px 4px' : isTablet ? '4px 6px' : '6px 8px', borderRight: '1px solid #ddd', textAlign: isMobile ? 'center' : 'left' }}>
                     {row.IN_Photo ? <a href={row.IN_Photo} target="_blank" rel="noopener noreferrer">View</a> : null}

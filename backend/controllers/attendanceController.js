@@ -11,8 +11,10 @@ const createMapsLink = (latitude, longitude) => {
 };
 
 const getISTTime = (date = new Date()) => {
-  return new Date(date.getTime());
+  const istOffset = 0; // IST offset in milliseconds
+  return new Date(date.getTime() + istOffset);
 };
+
 
 const formatDateForMongo = (date) => {
   return date.toISOString();
@@ -28,21 +30,12 @@ const formatDateForSheet = (date) => {
   return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
-const addTimeOffset = (date) => {
-  const offsetTime = new Date(date.getTime());
-  return offsetTime;
-};
-
 const updateGoogleSheet = async (employeeId, employeeName, attendance, status) => {
   const start = new Date(attendance.inTime);
   start.setHours(0, 0, 0, 0);
 
-  // Ensure the time offset is applied only once before formatting
-  const inTimeAdjusted = attendance.inTime ? addTimeOffset(new Date(attendance.inTime)) : null;
-  const outTimeAdjusted = attendance.outTime ? addTimeOffset(new Date(attendance.outTime)) : null;
-
-  const inTimeFormatted = inTimeAdjusted ? formatDateForSheet(inTimeAdjusted) : '';
-  const outTimeFormatted = outTimeAdjusted ? formatDateForSheet(outTimeAdjusted) : '';
+  const inTimeFormatted = attendance.inTime ? formatDateForSheet(getISTTime(new Date(attendance.inTime))) : '';
+  const outTimeFormatted = attendance.outTime ? formatDateForSheet(getISTTime(new Date(attendance.outTime))) : '';
 
   const sheetData = await sheets.spreadsheets.values.get({
     spreadsheetId: process.env.SPREADSHEET_ID,
@@ -58,19 +51,19 @@ const updateGoogleSheet = async (employeeId, employeeName, attendance, status) =
     attendance.geoLocationIn,
     attendance.photoUrlIn,
     'IN',
-    status || 'Normal',
+    status || 'normal',
     outTimeFormatted,
     attendance.geoLocationOut,
     attendance.photoUrlOut,
     'OUT',
-    attendance.locationStatusIn || '', // Include the locationStatusIn or an empty string
-    attendance.locationStatusOut || '' // Include the locationStatusOut or an empty string
+    attendance.locationStatusIn || '', // Include the locationStatusIn or an empty string      
+    attendance.locationStatusOut || '' // Include the locationStatusOut or an empty string     
   ];
 
   if (rowIndex !== -1) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: `Sheet2!A${rowIndex + 1}:N${rowIndex + 1}`, // Update the range as necessary
+      range: `Sheet2!A${rowIndex + 1}:N${rowIndex + 1}`, // Update the range as necessary      
       valueInputOption: 'USER_ENTERED',
       resource: {
         values: [updatedRow],
@@ -127,7 +120,7 @@ const createAttendance = async (req, res) => {
         geoLocationOut: type === 'OUT' ? mapsLink : null,
         photoUrlIn: type === 'IN' ? photo : null,
         photoUrlOut: type === 'OUT' ? photo : null,
-        status: status || 'Normal',
+        status: status || 'normal',
         locationStatusIn: type === 'IN' ? locationStatus : null,
         locationStatusOut: type === 'OUT' ? locationStatus : null
       });
@@ -143,10 +136,10 @@ const createAttendance = async (req, res) => {
         attendance.photoUrlOut = photo;
         attendance.locationStatusOut = locationStatus;
       }
-      attendance.status = status || 'Normal';
+      attendance.status = status || 'normal';
     }
     await attendance.save();
-    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'Normal', mapsLink, photo, formatDateForMongo(currentTimeIST), null);
+    await createLog(employeeId, employeeName, `Checked ${type}`, status || 'normal', mapsLink, photo, formatDateForMongo(currentTimeIST), null);
 
     await updateGoogleSheet(employeeId, employeeName, attendance, status);
 
@@ -178,7 +171,7 @@ const updateAttendance = async (req, res) => {
         attendance.locationStatusOut = null;
       }
       await attendance.save();
-      await createLog(employeeId, attendance.employeeName, `${type} ${action}`, status || 'Normal', attendance.geoLocationIn, attendance.photoUrlIn, attendance.inTime, attendance.outTime);
+      await createLog(employeeId, attendance.employeeName, `${type} ${action}`, status || 'normal', attendance.geoLocationIn, attendance.photoUrlIn, attendance.inTime, attendance.outTime);  
     } else if (action === 'append') {
       attendance.status = status;
       await attendance.save();
@@ -244,7 +237,7 @@ const updateAttendanceFromLog = async (req, res) => {
     res.status(200).json({ success: true, attendance });
   } catch (error) {
     console.error('Error updating attendance from log:', error);
-    res.status(500).json({ success: false, message: 'Error updating attendance from log' });
+    res.status(500).json({ success: false, message: 'Error updating attendance from log' });   
   }
 };
 

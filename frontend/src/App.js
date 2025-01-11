@@ -19,7 +19,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-        <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
+        <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />     
         <Route path="/monthly-report" element={<PrivateRoute><MonthlyReport /></PrivateRoute>} />
         <Route path="*" element={<Navigate to={auth ? "/home" : "/login"} />} />
       </Routes>

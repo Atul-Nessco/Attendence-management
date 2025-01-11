@@ -8,7 +8,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const { connectDB } = require('./config/db');
 
 const app = express();
-const PORT = process.env.PORT  || 8000;
+const PORT = process.env.PORT  || 9008;
 
 if (!PORT) {
   console.error('PORT is not defined in the environment variables');
@@ -24,8 +24,6 @@ function startServer(port) {
       console.log(`Server is running on port ${port}`);
   }).on('error', err => {
       if (err.code === 'EADDRINUSE') {
-          console.log(`Port ${port} is in use, trying another port...`);
-          startServer(port+1);
       } else {
           console.error('Server error:', err);
       }
@@ -35,6 +33,7 @@ function startServer(port) {
 connectDB();
 
 app.use(cors());
+
 app.use(express.json({ limit: '50mb' }));
 
 app.use('/api/auth', authRoutes);

@@ -196,7 +196,7 @@ const ProfileDropdown = () => {
             }}
           />
           {passwordError && <Typography color="error">{passwordError}</Typography>}
-          {successMessage && <Typography color="primary">{successMessage}</Typography>}
+          {successMessage && <Typography color="primary">{successMessage}</Typography>}        
           <Box sx={{ m: 2, position: 'relative' }}>
             <Button
               variant="contained"
