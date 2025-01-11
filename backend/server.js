@@ -33,12 +33,12 @@ function startServer(port) {
     });
 }
 
-// Allow all CORS requests
 app.use(cors({
-  origin: '*', // Allows all origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allowed HTTP methods
+  origin: ['http://localhost:3000'], // Allow requests from localhost:3000
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allowed methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 }));
+
 
 app.use(express.json({ limit: '50mb' }));
 
