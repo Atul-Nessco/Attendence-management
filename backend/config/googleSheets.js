@@ -1,4 +1,4 @@
-import { google } from 'googleapis';
+const { google } = require('googleapis');
 
 const googleSheetsClient = () => {
   const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS || '{}');
@@ -21,5 +21,4 @@ const googleSheetsClient = () => {
   return { sheets, drive };
 };
 
-export { googleSheetsClient };
-
+module.exports = { googleSheetsClient };
